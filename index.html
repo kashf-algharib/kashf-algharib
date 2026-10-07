@@ -156,14 +156,19 @@ function gHome(){
   TY.forEach(function(t,i){h+='<button class="chip'+(S.ty.indexOf(i)>-1?' on':'')+'" data-i="'+i+'">'+t+'</button>'});
   h+='</div><div class="row">';
   ['سهل','عادي','صعب'].forEach(function(t,i){h+='<button class="chip'+(S.df==i?' on':'')+'" data-d="'+i+'">'+t+'</button>'});
-   h+='</div>'+(S.last!=today()?'<button class="btn alt" id="gf">🎁 مكافأة اليوم</button>':'')+'<button class="btn" id="go">ابدأ الدور</button><button class="btn alt" id="dy">تحدي اليوم</button><div class="row"><button class="btn alt" id="on">🌐 العب مع أصدقاء عن بُعد</button></div><div class="row"><button class="chip" id="acc">👤 الحساب</button><button class="chip" id="inb">✉️ الطلبات</button></div><div class="row"><button class="chip" id="mS">🛒 المتجر</button><button class="chip" id="mA">🏅 إنجازات</button><button class="chip" id="mL">🏆 الصدارة</button><button class="chip" id="mB">💾 حفظ</button></div>';
+  h+='</div>'+(S.last!=today()?'<button class="btn alt" id="gf">🎁 مكافأة اليوم</button>':'')+'<button class="btn" id="go">ابدأ الدور</button><button class="btn alt" id="dy">تحدي اليوم</button><div class="row"><button class="btn alt" id="localMulti">👥 العب مع صاحبك على نفس الجهاز</button></div><div class="row"><button class="btn alt" id="on">🌐 العب مع أصدقاء عن بُعد</button></div><div class="row"><button class="chip" id="acc">👤 الحساب</button><button class="chip" id="inb">✉️ الطلبات</button></div><div class="row"><button class="chip" id="mS">🛒 المتجر</button><button class="chip" id="mA">🏅 إنجازات</button><button class="chip" id="mL">🏆 الصدارة</button><button class="chip" id="mB">💾 حفظ</button></div>';
   $('home').innerHTML=h;
   $('home').querySelectorAll('[data-d]').forEach(function(c){c.onclick=function(){S.df=+c.dataset.d;save();gHome()}});
   if($('gf'))$('gf').onclick=claim;
   $('mS').onclick=shop;$('mA').onclick=acs;$('mL').onclick=lbm;$('mB').onclick=bak;
   $('home').querySelectorAll('[data-i]').forEach(function(c){c.onclick=function(){var i=+c.dataset.i,x=S.ty.indexOf(i);if(x>-1){if(S.ty.length>1)S.ty.splice(x,1)}else S.ty.push(i);save();gHome()}});
   $('go').onclick=function(){run(0)};$('dy').onclick=function(){run(1)};
-   $('m2').onclick=function(){mpStart(2)};$('m3').onclick=function(){mpStart(3)};$('m4').onclick=function(){mpStart(4)};
+   $('localMulti').onclick=function(){
+    card('<h2>العب مع صاحبك</h2><p class="mu">اختار عدد اللاعبين على نفس الجهاز</p><button class="btn" id="m2">لاعبان</button><button class="btn" id="m3">٣ لاعبين</button><button class="btn" id="m4">٤ لاعبين — فريقان</button>');
+    $('m2').onclick=function(){$('ov').className='ov hide';mpStart(2)};
+    $('m3').onclick=function(){$('ov').className='ov hide';mpStart(3)};
+    $('m4').onclick=function(){$('ov').className='ov hide';mpStart(4)};
+   };
    $('on').onclick=function(){if(window.onlineHome)window.onlineHome();else toast('جارٍ الاتصال بالخدمة')};
    $('acc').onclick=function(){if(window.onlineAccount)window.onlineAccount();else toast('جارٍ الاتصال بالخدمة')};
    $('inb').onclick=function(){if(window.onlineInbox)window.onlineInbox();else toast('جارٍ الاتصال بالخدمة')};
