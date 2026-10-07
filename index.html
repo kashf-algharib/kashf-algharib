@@ -39,10 +39,10 @@ h1{font-size:1.8rem;margin:0}h2{margin:0}p{margin:0;line-height:1.8}
 .card{background:#fff;color:#000;border-radius:14px;padding:20px;width:min(88%,360px);text-align:center;display:flex;flex-direction:column;gap:12px}
 .card .btn{background:#000;color:#fff}.card .alt{background:transparent;color:#000;box-shadow:inset 0 0 0 2px #ccc}
 .card .bar{background:#ddd}.card .bar i{background:#000}
-#mp{position:fixed;inset:0;background:var(--bg);display:grid;z-index:8;padding-top:env(safe-area-inset-top,0px);box-sizing:border-box}
+#mp{position:fixed;inset:0;background:var(--bg);display:grid;z-index:8;padding:env(safe-area-inset-top,0px) 8px calc(68px + env(safe-area-inset-bottom,0px));box-sizing:border-box}
 .pb{padding:8px;display:flex;flex-direction:column;gap:4px;min-height:0;min-width:0;overflow:hidden;border:1px solid var(--tr);box-sizing:border-box}
 .pb.r{transform:rotate(180deg)}.pb small{text-align:center;color:var(--mu)}
-#mc{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:5}
+#mc{position:fixed;left:50%;top:auto;bottom:calc(8px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:5;display:flex;flex-direction:row;gap:8px}
 </style>
 </head>
 <body>
@@ -156,19 +156,22 @@ function gHome(){
   TY.forEach(function(t,i){h+='<button class="chip'+(S.ty.indexOf(i)>-1?' on':'')+'" data-i="'+i+'">'+t+'</button>'});
   h+='</div><div class="row">';
   ['سهل','عادي','صعب'].forEach(function(t,i){h+='<button class="chip'+(S.df==i?' on':'')+'" data-d="'+i+'">'+t+'</button>'});
-  h+='</div>'+(S.last!=today()?'<button class="btn alt" id="gf">🎁 مكافأة اليوم</button>':'')+'<button class="btn" id="go">ابدأ الدور</button><button class="btn alt" id="dy">تحدي اليوم</button><div class="row"><button class="btn alt" id="m2">مع صاحبك (2)</button><button class="btn alt" id="m4">فريقين (4)</button></div><div class="row"><button class="chip" id="mS">🛒 المتجر</button><button class="chip" id="mA">🏅 إنجازات</button><button class="chip" id="mL">🏆 الصدارة</button><button class="chip" id="mB">💾 حفظ</button></div>';
+   h+='</div>'+(S.last!=today()?'<button class="btn alt" id="gf">🎁 مكافأة اليوم</button>':'')+'<button class="btn" id="go">ابدأ الدور</button><button class="btn alt" id="dy">تحدي اليوم</button><div class="row"><button class="btn alt" id="on">🌐 العب مع أصدقاء عن بُعد</button></div><div class="row"><button class="chip" id="acc">👤 الحساب</button><button class="chip" id="inb">✉️ الطلبات</button></div><div class="row"><button class="chip" id="mS">🛒 المتجر</button><button class="chip" id="mA">🏅 إنجازات</button><button class="chip" id="mL">🏆 الصدارة</button><button class="chip" id="mB">💾 حفظ</button></div>';
   $('home').innerHTML=h;
   $('home').querySelectorAll('[data-d]').forEach(function(c){c.onclick=function(){S.df=+c.dataset.d;save();gHome()}});
   if($('gf'))$('gf').onclick=claim;
   $('mS').onclick=shop;$('mA').onclick=acs;$('mL').onclick=lbm;$('mB').onclick=bak;
   $('home').querySelectorAll('[data-i]').forEach(function(c){c.onclick=function(){var i=+c.dataset.i,x=S.ty.indexOf(i);if(x>-1){if(S.ty.length>1)S.ty.splice(x,1)}else S.ty.push(i);save();gHome()}});
   $('go').onclick=function(){run(0)};$('dy').onclick=function(){run(1)};
-  $('m2').onclick=function(){mpStart(2)};$('m4').onclick=function(){mpStart(4)};
+   $('m2').onclick=function(){mpStart(2)};$('m3').onclick=function(){mpStart(3)};$('m4').onclick=function(){mpStart(4)};
+   $('on').onclick=function(){if(window.onlineHome)window.onlineHome();else toast('جارٍ الاتصال بالخدمة')};
+   $('acc').onclick=function(){if(window.onlineAccount)window.onlineAccount();else toast('جارٍ الاتصال بالخدمة')};
+   $('inb').onclick=function(){if(window.onlineInbox)window.onlineInbox();else toast('جارٍ الاتصال بالخدمة')};
 }
 function mpStart(n){
-  var m=$('mp'),B=[],fin=[],dn=[],ms=[],over=0,seed=Date.now()%1e9,N=6,tm=n/2,t0;
-  m.className='';m.style.gridTemplate=n==2?'1fr 1fr/1fr':'1fr 1fr/1fr 1fr';
-  m.innerHTML='<div id="mc" style="display:flex;flex-direction:column;gap:8px"><button class="btn alt" id="mx" style="background:var(--bg)">خروج</button><button class="btn alt hide" id="mr" style="background:var(--bg)">إعادة</button></div>';
+   var m=$('mp'),B=[],fin=[],dn=[],ms=[],over=0,seed=Date.now()%1e9,N=6,tm=n/2,t0,solo=n==3;
+   m.className='';m.style.gridTemplate=n==2?'1fr 1fr/1fr':n==3?'repeat(3,1fr)/1fr':'1fr 1fr/1fr 1fr';
+   m.innerHTML='<div id="mc"><button class="btn alt" id="mx" style="background:var(--bg)">خروج</button><button class="btn alt hide" id="mr" style="background:var(--bg)">إعادة</button></div>';
   $('mx').onclick=function(){B.forEach(function(b){b.stop()});m.className='hide';gHome()};
   for(var i=0;i<n;i++){(function(i){
     var d=document.createElement('div');d.className='pb'+(i<tm?' r':'');m.appendChild(d);
@@ -180,13 +183,28 @@ function mpStart(n){
   t0=performance.now();B.forEach(function(b){b.start()});
   function chk(i){
     if(over)return;
-    var t=i<tm?0:1,all=1;
-    for(var j=0;j<n;j++)if((j<tm?0:1)==t&&!fin[j])all=0;
-    if(all){over=1;B.forEach(function(b){b.stop()});res(t)}
-  }
-  function res(w){
-    var T=['ما تتحدانيش تاني 😎','أنا ملك اللعبة 👑','ما تدخلش معايا في دور تاني 😏'];
-    B.forEach(function(b,i){
+     if(solo){
+       for(var j=0;j<n;j++)if(!fin[j])return;
+       over=1;B.forEach(function(b){b.stop()});res();return;
+     }
+     var t=i<tm?0:1,all=1;
+     for(var j=0;j<n;j++)if((j<tm?0:1)==t&&!fin[j])all=0;
+     if(all){over=1;B.forEach(function(b){b.stop()});res(t)}
+   }
+   function res(w){
+     var T=['ما تتحدانيش تاني 😎','أنا ملك اللعبة 👑','ما تدخلش معايا في دور تاني 😏'];
+     if(solo){
+       var best=Math.min.apply(Math,fin),winners=[];
+       fin.forEach(function(t,i){if(Math.abs(t-best)<1)winners.push(i)});
+       B.forEach(function(b,i){
+         var rt=Math.max(0,Math.round(60+40*Math.max(0,1-fin[i]/36000)-3*(ms[i]||0)));
+         var place=1;for(var j=0;j<n;j++)if(fin[j]<fin[i]-1)place++;
+         var rank=winners.indexOf(i)>-1?(winners.length>1?'تعادلتم في المركز الأول!':'أنت الفائز!'):'المركز '+place;
+         b.msg('<b>'+(winners.indexOf(i)>-1?'🏆 '+rank:'اللاعب '+(i+1)+' — '+rank)+'</b><br>تقييمك '+rt+'/100<br><small>أخطاء: '+(ms[i]||0)+'</small>');
+       });
+       $('mx').textContent='رجوع';$('mr').classList.remove('hide');$('mr').onclick=function(){mpStart(n)};return;
+     }
+     B.forEach(function(b,i){
       var won=(i<tm?0:1)==w,rt=Math.max(0,fin[i]?Math.round(60+40*Math.max(0,1-fin[i]/36000)-3*(ms[i]||0)):Math.round(60*(dn[i]||0)/N-3*(ms[i]||0)));
       b.msg('<b>'+(won?(n==2?'🏆 فزت!':'🏆 فريقك فاز!'):T[Math.random()*3|0])+'</b><br>تقييمك '+rt+'/100<br><small>أخطاء: '+(ms[i]||0)+'</small>');
     });
@@ -238,6 +256,253 @@ function snd(){$('snd').textContent=S.mute?'🔇':'🔊'}
 $('snd').onclick=function(){S.mute^=1;save();snd()};
 $('hlp').onclick=help;
 skin();snd();gHome();if(!S.seen)help();
+</script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
+import { getDatabase, ref, get, set, update, push, onValue, runTransaction, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js';
+
+const firebaseConfig = {
+  apiKey: 'AIzaSyD4G4ITLLV2Iw8ov18ECbWRJJpY04FGeUs',
+  authDomain: 'kashf-algharib.firebaseapp.com',
+  databaseURL: 'https://kashf-algharib-default-rtdb.europe-west1.firebasedatabase.app',
+  projectId: 'kashf-algharib',
+  storageBucket: 'kashf-algharib.firebasestorage.app',
+  messagingSenderId: '992348194697',
+  appId: '1:992348194697:web:c71a5f5d63e47b32b3c358'
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+let currentUser = null, currentProfile = null, inboxStop = null, roomStop = null, activeRoomId = null, activeMode = 0, gameStarted = false;
+const $id = id => document.getElementById(id);
+const safeText = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const notify = msg => window.toast ? window.toast(msg) : alert(msg);
+const uid = () => currentUser && currentUser.uid;
+const path = value => ref(db, value);
+function cleanHandle(value) { return String(value || '').trim().toLowerCase(); }
+function validHandle(value) { return /^[a-z0-9_]{3,18}$/.test(value); }
+async function loadProfile(userId) {
+  const snap = await get(path('profiles/' + userId));
+  return snap.exists() ? snap.val() : null;
+}
+async function claimHandle(raw) {
+  const key = cleanHandle(raw);
+  if (!validHandle(key)) throw new Error('اسم المستخدم لازم يكون من 3 إلى 18 حرفًا أو رقمًا، ويسمح بالشرطة السفلية _ فقط.');
+  const existing = await get(path('handles/' + key));
+  if (existing.exists() && existing.val() !== uid()) throw new Error('اسم المستخدم مستخدم. جرّب إضافة _ أو رقم، مثل name_2.');
+  const result = await runTransaction(path('handles/' + key), old => old === null ? uid() : old, { applyLocally: false });
+  if (!result.committed || result.snapshot.val() !== uid()) throw new Error('اسم المستخدم مستخدم. جرّب إضافة _ أو رقم، مثل name_2.');
+  const previous = currentProfile || {};
+  const profile = { handle: key, handleKey: key, createdAt: previous.createdAt || serverTimestamp() };
+  await set(path('profiles/' + uid()), profile);
+  currentProfile = profile;
+  return profile;
+}
+function showAccount() {
+  if (currentUser) {
+    const label = currentProfile ? '@' + currentProfile.handle : 'لسه محتاج تختار اسم مستخدم';
+    window.card('<h2>حسابك</h2><p>' + safeText(label) + '</p>' +
+      (currentProfile ? '' : '<input id="newHandle" placeholder="اسم المستخدم، مثال ashraf_2" maxlength="18" style="font:inherit;padding:10px;text-align:center">' +
+        '<button class="btn" id="saveHandle">حفظ اسم المستخدم</button>') +
+      '<button class="btn alt" id="logout">تسجيل الخروج</button>');
+    if (!currentProfile) $id('saveHandle').onclick = async () => {
+      try { await claimHandle($id('newHandle').value); notify('تم حفظ اسم المستخدم'); window.gHome(); }
+      catch (e) { notify(e.message || 'تعذر حفظ الاسم'); }
+    };
+    $id('logout').onclick = async () => { await signOut(auth); window.gHome(); };
+    return;
+  }
+  window.card('<h2>حساب اللعب عن بُعد</h2><p class="mu">الإيميل للدخول فقط، واسم المستخدم هو اللي هيظهر لأصحابك.</p>' +
+    '<input id="authEmail" type="email" autocomplete="email" placeholder="الإيميل" style="font:inherit;padding:10px;text-align:center">' +
+    '<input id="authPass" type="password" autocomplete="current-password" placeholder="كلمة المرور" style="font:inherit;padding:10px;text-align:center">' +
+    '<input id="authHandle" autocomplete="username" placeholder="اسم مستخدم جديد (عند إنشاء حساب)" maxlength="18" style="font:inherit;padding:10px;text-align:center">' +
+    '<button class="btn" id="signup">إنشاء حساب</button><button class="btn alt" id="login">دخول</button>');
+  $id('signup').onclick = async () => {
+    try {
+      const email = $id('authEmail').value.trim(), pass = $id('authPass').value;
+      const handle = $id('authHandle').value;
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      currentUser = cred.user;
+      await claimHandle(handle);
+      notify('الحساب اتعمل باسم @' + currentProfile.handle);
+      window.gHome();
+    } catch (e) { notify(e.code === 'auth/email-already-in-use' ? 'الإيميل مستخدم قبل كده؛ اضغط دخول.' : (e.message || 'تعذر إنشاء الحساب')); }
+  };
+  $id('login').onclick = async () => {
+    try {
+      const cred = await signInWithEmailAndPassword(auth, $id('authEmail').value.trim(), $id('authPass').value);
+      currentUser = cred.user; currentProfile = await loadProfile(uid());
+      notify(currentProfile ? 'أهلًا @' + currentProfile.handle : 'اختار اسم مستخدم لحسابك');
+      window.gHome();
+      if (!currentProfile) showAccount();
+    } catch (e) { notify('تعذر الدخول. راجع الإيميل وكلمة المرور.'); }
+  };
+}
+function chooseOnlineMode() {
+  if (!currentUser) return showAccount();
+  if (!currentProfile) return showAccount();
+  window.card('<h2>العب عن بُعد</h2><p>اختار عدد اللاعبين، وبعدها ابحث عن أصحابك وابعث لهم دعوة.</p>' +
+    '<button class="btn" id="mode2">لاعبان — واحد ضد واحد</button>' +
+    '<button class="btn" id="mode3">3 لاعبين — كل واحد لنفسه</button>' +
+    '<button class="btn" id="mode4">4 لاعبين — فريقان</button>');
+  [2,3,4].forEach(n => $id('mode' + n).onclick = () => createRoom(n));
+}
+async function createRoom(mode) {
+  try {
+    const roomRef = push(path('rooms'));
+    const roomId = roomRef.key;
+    await set(roomRef, {
+      hostUid: uid(), playerCount: mode, mode, status: 'waiting', seed: Date.now() % 1000000000,
+      createdAt: serverTimestamp(), players: { [uid()]: { handle: currentProfile.handle, joinedAt: Date.now() } }
+    });
+    await showLobby(roomId);
+  } catch (e) { notify('تعذر إنشاء غرفة. تأكد من إعداد قواعد قاعدة البيانات.'); }
+}
+async function sendInvite(roomId) {
+  const field = $id('friendHandle');
+  const key = cleanHandle(field && field.value);
+  if (!validHandle(key)) return notify('اكتب اسم المستخدم كما هو.');
+  try {
+    const roomSnap = await get(path('rooms/' + roomId));
+    const room = roomSnap.val();
+    if (!room || room.status !== 'waiting') return notify('الغرفة لم تعد تستقبل دعوات.');
+    const players = room.players || {}, invitees = room.invitees || {};
+    const pendingInvites = Object.keys(invitees).filter(id => !players[id]).length;
+    if (Object.keys(players).length + pendingInvites >= room.playerCount) return notify('كل أماكن الغرفة اتملت أو اتبعتت لها دعوات.');
+    const handleSnap = await get(path('handles/' + key));
+    if (!handleSnap.exists()) return notify('الاسم مش موجود. راجع كتابته مع صاحبك.');
+    const targetUid = handleSnap.val();
+    if (targetUid === uid()) return notify('ما ينفعش تبعت دعوة لنفسك.');
+    if (players[targetUid]) return notify('اللاعب دخل الغرفة بالفعل.');
+    const targetProfile = await loadProfile(targetUid);
+    await set(path('rooms/' + roomId + '/invitees/' + targetUid), true);
+    await set(path('requests/' + targetUid + '/' + roomId), {
+      fromUid: uid(), fromHandle: currentProfile.handle, roomId, mode: room.mode, status: 'pending', createdAt: Date.now()
+    });
+    notify('اتبعت دعوة إلى @' + (targetProfile ? targetProfile.handle : key));
+    field.value = '';
+  } catch (e) { notify('تعذر إرسال الدعوة. ربما سبق إرسال دعوة لهذه الغرفة.'); }
+}
+async function showLobby(roomId) {
+  activeRoomId = roomId; gameStarted = false;
+  if (roomStop) { roomStop(); roomStop = null; }
+  const roomRef = path('rooms/' + roomId);
+  roomStop = onValue(roomRef, snap => {
+    const room = snap.val();
+    if (!room) { notify('الغرفة لم تعد موجودة.'); return window.gHome(); }
+    if (room.status === 'finished') { showOnlineOutcome(roomId, room); return; }
+    if (room.status === 'playing') {
+      if (!gameStarted) startOnlineGame(roomId, room);
+      else showOnlineOutcome(roomId, room);
+      return;
+    }
+    const players = room.players || {}, count = Object.keys(players).length;
+    const host = room.hostUid === uid();
+    let people = Object.values(players).map(p => '<p>✅ @' + safeText(p.handle) + '</p>').join('');
+    let inviteForm = host ? '<hr><p>ابحث عن صديق باسمه وابعث له دعوة (' + count + '/' + room.playerCount + ')</p>' +
+      '<input id="friendHandle" placeholder="اسم الصديق" maxlength="18" style="font:inherit;padding:10px;text-align:center">' +
+      '<button class="btn alt" id="sendInvite">إرسال طلب لعب</button>' : '<p>أنت داخل الغرفة. مستني صاحب الغرفة يكمل اللاعبين.</p>';
+    let start = host ? '<button class="btn" id="startRoom" ' + (count !== room.playerCount ? 'disabled' : '') + '>ابدأ اللعب (' + count + '/' + room.playerCount + ')</button>' : '<p class="mu">اللعب هيبدأ لما المضيف يضغط ابدأ بعد دخول كل اللاعبين.</p>';
+    window.card('<h2>غرفة انتظار</h2><p>اللاعبين: ' + count + ' من ' + room.playerCount + '</p>' + people + inviteForm + start +
+      '<button class="btn alt" id="leaveRoom">رجوع</button>');
+    if (host) {
+      $id('sendInvite').onclick = () => sendInvite(roomId);
+      if (count >= room.playerCount) $id('startRoom').onclick = async () => {
+        try { await set(path('rooms/' + roomId + '/status'), 'playing'); }
+        catch (e) { notify('تعذر بدء اللعبة.'); }
+      };
+    }
+    $id('leaveRoom').onclick = () => { if (roomStop) roomStop(); roomStop = null; activeRoomId = null; window.gHome(); };
+  });
+}
+async function acceptInvite(roomId, accept) {
+  try {
+    await update(path('requests/' + uid() + '/' + roomId), { status: accept ? 'accepted' : 'rejected', answeredAt: Date.now() });
+    if (accept) {
+      const snap = await get(path('rooms/' + roomId));
+      const room = snap.val();
+      if (!room || room.status !== 'waiting') return notify('الغرفة انتهت أو بدأت بالفعل.');
+      await set(path('rooms/' + roomId + '/players/' + uid()), { handle: currentProfile.handle, joinedAt: Date.now() });
+      await showLobby(roomId);
+    } else { notify('تم رفض الدعوة.'); onlineInbox(); }
+  } catch (e) { notify('تعذر التعامل مع الدعوة.'); }
+}
+async function onlineInbox() {
+  if (!currentUser) return showAccount();
+  if (!currentProfile) return showAccount();
+  if (inboxStop) { inboxStop(); inboxStop = null; }
+  try {
+    const snap = await get(path('requests/' + uid()));
+    const items = snap.exists() ? snap.val() : {};
+    const pending = Object.keys(items).filter(k => items[k] && items[k].status === 'pending');
+    let html = '<h2>طلبات اللعب</h2>';
+    if (!pending.length) html += '<p>مفيش طلبات جديدة دلوقتي.</p>';
+    pending.forEach(roomId => {
+      const r = items[roomId];
+      html += '<div class="row"><span>دعوة من <b>@' + safeText(r.fromHandle) + '</b> — ' + r.mode + ' لاعبين</span>' +
+        '<button class="chip on" data-accept="' + safeText(roomId) + '">قبول</button>' +
+        '<button class="chip" data-reject="' + safeText(roomId) + '">رفض</button></div>';
+    });
+    window.card(html);
+    document.querySelectorAll('[data-accept]').forEach(b => b.onclick = () => acceptInvite(b.dataset.accept, true));
+    document.querySelectorAll('[data-reject]').forEach(b => b.onclick = () => acceptInvite(b.dataset.reject, false));
+  } catch (e) { notify('تعذر تحميل الطلبات.'); }
+}
+function startOnlineGame(roomId, room) {
+  gameStarted = true;
+  window.$('ov').className = 'ov hide'; window.$('mp').className = 'hide'; window.scr('play');
+  const players = room.players || {}, ids = Object.keys(players), N = 6, errors = 0;
+  let mistakes = 0, started = performance.now(), localDone = 0, spent = 0, stopped = false;
+  window.G = { h: 3, done: 0, N, pl: N, sp: 0, gain: 0, day: 0, up: 0 };
+  let board;
+  function finish() {
+    if (stopped) return; stopped = true; board.stop();
+    const score = Math.max(0, Math.round(100 * (localDone / N) * (localDone ? (.6 + .4 * (1 - spent / localDone)) : .6) - 3 * mistakes));
+    set(path('rooms/' + roomId + '/results/' + uid()), {
+      handle: currentProfile.handle, score, elapsed: Math.round(performance.now() - started), mistakes,
+      done: localDone, completed: localDone === N, finishedAt: serverTimestamp()
+    }).catch(() => notify('تعذر حفظ النتيجة.'));
+    window.card('<h2>خلصت دورك!</h2><p>نتيجتك: ' + score + '/100</p><p class="mu">مستني باقي اللاعبين يخلصوا...</p>');
+  }
+  board = window.Board(window.$('bd'), room.seed, N, {
+    ty: window.S.ty, timed: 1, df: window.S.df,
+    ok: function(s, k, ms, lim) { localDone++; window.G.done++; spent += Math.min(1, ms / lim); window.sfx(1); },
+    bad: function(s) { mistakes++; window.G.h--; window.sfx(0); if (window.G.h > 0) board.retry(); else finish(); },
+    end: function() { finish(); }
+  });
+  window.hud(); board.start();
+}
+function showOnlineOutcome(roomId, room) {
+  const players = room.players || {}, ids = Object.keys(players), results = room.results || {};
+  if (ids.length < room.playerCount || ids.some(id => !results[id])) return;
+  const ordered = ids.slice().sort((a,b) => (players[a].joinedAt - players[b].joinedAt) || a.localeCompare(b));
+  const byTime = ids.slice().sort((a,b) => (results[b].score - results[a].score) || (results[a].elapsed - results[b].elapsed));
+  let summary = '';
+  if (room.mode === 3) summary = 'ترتيبك: المركز ' + (byTime.indexOf(uid()) + 1);
+  else if (room.mode === 2) summary = byTime[0] === uid() ? '🏆 أنت الفائز!' : 'الجولة دي لصاحبك، العبوا تاني!';
+  else {
+    const half = ordered.length / 2, team = ordered.indexOf(uid()) < half ? 0 : 1;
+    const averages = [0,0], counts = [0,0];
+    ordered.forEach((id,i) => { const t = i < half ? 0 : 1; averages[t] += results[id].score; counts[t]++; });
+    const winner = averages[0] / counts[0] >= averages[1] / counts[1] ? 0 : 1;
+    summary = team === winner ? '🏆 فريقك فاز!' : 'الفريق التاني فاز.';
+  }
+  let rows = byTime.map((id,i) => '<p>' + (i+1) + '. @' + safeText(players[id].handle) + ' — ' + results[id].score + '/100</p>').join('');
+  window.$('ov').className = 'ov hide'; window.scr('end');
+  window.$('end').innerHTML = '<h1>نتيجة اللعب عن بُعد</h1><p><b>' + safeText(summary) + '</b></p>' + rows +
+    '<button class="btn" id="onlineHome">الرئيسية</button>';
+  $id('onlineHome').onclick = () => { if (roomStop) roomStop(); roomStop = null; activeRoomId = null; window.gHome(); };
+  if (room.hostUid === uid() && room.status !== 'finished') set(path('rooms/' + roomId + '/status'), 'finished').catch(() => {});
+}
+onAuthStateChanged(auth, async user => {
+  currentUser = user; currentProfile = user ? await loadProfile(user.uid).catch(() => null) : null;
+  if (window.gHome) window.gHome();
+});
+window.onlineHome = chooseOnlineMode;
+window.onlineAccount = showAccount;
+window.onlineInbox = onlineInbox;
+window.gHome();
 </script>
 </body>
 </html>
