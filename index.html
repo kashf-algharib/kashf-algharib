@@ -268,7 +268,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, si
 import { getDatabase, ref, get, set, update, push, onValue, runTransaction, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyD4G4ITLLV2Iw8ov18ECbWRJJpY04FGeUs',
+  apiKey: 'AIzaSyD4G4ITLLV2Iw8ov18EcbWRJJpY04FGeUs',
   authDomain: 'kashf-algharib.firebaseapp.com',
   databaseURL: 'https://kashf-algharib-default-rtdb.europe-west1.firebasedatabase.app',
   projectId: 'kashf-algharib',
@@ -318,39 +318,30 @@ function showAccount() {
     $id('logout').onclick = async () => { await signOut(auth); window.gHome(); };
     return;
   }
-  window.card('<h2>حساب اللعب عن بُعد</h2><p class="mu">اكتب اسم المستخدم وكلمة المرور فقط. مش محتاج إيميل حقيقي.</p>' +
-    '<input id="authHandle" autocomplete="username" placeholder="اسم المستخدم (3–18 حرفًا أو رقمًا و _)" maxlength="18" style="font:inherit;padding:10px;text-align:center">' +
+  window.card('<h2>حساب اللعب عن بُعد</h2><p class="mu">الإيميل للدخول فقط، واسم المستخدم هو اللي هيظهر لأصحابك.</p>' +
+    '<input id="authEmail" type="email" autocomplete="email" placeholder="الإيميل" style="font:inherit;padding:10px;text-align:center">' +
     '<input id="authPass" type="password" autocomplete="current-password" placeholder="كلمة المرور" style="font:inherit;padding:10px;text-align:center">' +
+    '<input id="authHandle" autocomplete="username" placeholder="اسم مستخدم جديد (عند إنشاء حساب)" maxlength="18" style="font:inherit;padding:10px;text-align:center">' +
     '<button class="btn" id="signup">إنشاء حساب</button><button class="btn alt" id="login">دخول</button>');
   $id('signup').onclick = async () => {
     try {
-      const handle = cleanHandle($id('authHandle').value), pass = $id('authPass').value;
-      if (!validHandle(handle)) throw new Error('اسم المستخدم من 3 إلى 18 حرفًا أو رقمًا، ويسمح بـ _ فقط.');
-      const email = handle + '@players.kashf-algharib.firebaseapp.com';
+      const email = $id('authEmail').value.trim(), pass = $id('authPass').value;
+      const handle = $id('authHandle').value;
       const cred = await createUserWithEmailAndPassword(auth, email, pass);
       currentUser = cred.user;
       await claimHandle(handle);
       notify('الحساب اتعمل باسم @' + currentProfile.handle);
       window.gHome();
-    } catch (e) {
-      const msg = e.code === 'auth/email-already-in-use' ? 'اسم المستخدم مستخدم بالفعل؛ جرّب اسمًا آخر أو اضغط دخول.' : e.code === 'auth/weak-password' ? 'كلمة المرور لازم تكون 6 أحرف على الأقل.' : e.code === 'auth/api-key-not-valid' ? 'إعداد Firebase غير صحيح: مفتاح API غير صالح.' : (e.message || 'تعذر إنشاء الحساب.');
-      notify(msg);
-    }
+    } catch (e) { notify(e.code === 'auth/email-already-in-use' ? 'الإيميل مستخدم قبل كده؛ اضغط دخول.' : (e.message || 'تعذر إنشاء الحساب')); }
   };
   $id('login').onclick = async () => {
     try {
-      const handle = cleanHandle($id('authHandle').value);
-      if (!validHandle(handle)) throw new Error('اكتب اسم المستخدم الصحيح.');
-      const email = handle + '@players.kashf-algharib.firebaseapp.com';
-      const cred = await signInWithEmailAndPassword(auth, email, $id('authPass').value);
+      const cred = await signInWithEmailAndPassword(auth, $id('authEmail').value.trim(), $id('authPass').value);
       currentUser = cred.user; currentProfile = await loadProfile(uid());
       notify(currentProfile ? 'أهلًا @' + currentProfile.handle : 'اختار اسم مستخدم لحسابك');
       window.gHome();
       if (!currentProfile) showAccount();
-    } catch (e) {
-      const msg = e.code === 'auth/api-key-not-valid' ? 'مفتاح Firebase غير صالح؛ لازم يتصحح إعداد المشروع.' : e.code === 'auth/invalid-credential' || e.code === 'auth/user-not-found' ? 'اسم المستخدم أو كلمة المرور غير صحيحين، أو الحساب لم يُنشأ بعد.' : (e.message || 'تعذر الدخول.');
-      notify(msg);
-    }
+    } catch (e) { notify('تعذر الدخول. راجع الإيميل وكلمة المرور.'); }
   };
 }
 function chooseOnlineMode() {
